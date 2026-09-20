@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Bible</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 顶部工具栏 -->
+  <header id="header">
+    <div class="logo">📖 Cyber Bible</div>
+    <div class="search-bar">
+      <input type="text" id="global-search" placeholder="🔍 搜索提示词..." autocomplete="off">
+      <div id="search-results" class="search-dropdown hidden"></div>
+    </div>
+    <button id="btn-new" class="btn btn-primary">+ 新建提示词</button>
+  </header>
+
+  <!-- 左侧导航 -->
+  <nav id="sidebar">
+    <ul class="nav-list">
+      <li class="nav-item active" data-view="home">🏠 首页</li>
+      <li class="nav-item" data-view="groups">📁 分组</li>
+      <li class="nav-item" data-view="graph">🕸️ 图谱</li>
+      <li class="nav-item" data-view="database">💾 数据库</li>
+    </ul>
+  </nav>
+
+  <!-- 主内容区 -->
+  <main id="content">
+    <!-- 各视图内容由 JS 动态渲染 -->
+  </main>
+
+  <!-- 详情面板（侧边滑出） -->
+  <aside id="detail-panel" class="hidden">
+    <div id="detail-content"></div>
+  </aside>
+
+  <!-- Toast 容器 -->
+  <div id="toast-container"></div>
+
+  <!-- 遮罩层 -->
+  <div id="overlay" class="hidden"></div>
+
+  <!-- JS 按依赖顺序加载 -->
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui/components.js"></script>
+  <script src="js/ui/layout.js"></script>
+  <script src="js/ui/home.js"></script>
+  <script src="js/ui/groups.js"></script>
+  <script src="js/ui/search.js"></script>
+  <script src="js/ui/graph.js"></script>
+  <script src="js/ui/database.js"></script>
+  <script src="js/ui/prompt-detail.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
