@@ -73,10 +73,12 @@
       '</div>';
     
     // Close button
-    container.querySelector('#detail-close').addEventListener('click', closeDetail);
+    var closeBtn = container.querySelector('#detail-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeDetail);
     
     // Remove tags
     container.querySelectorAll('.remove').forEach(function(btn) {
+      if (!btn || !btn.parentElement) return;
       btn.addEventListener('click', function() {
         btn.parentElement.remove();
       });
@@ -101,7 +103,8 @@
     });
     
     // Save
-    container.querySelector('#btn-save').addEventListener('click', async function() {
+    var saveBtn = container.querySelector('#btn-save');
+    if (saveBtn) saveBtn.addEventListener('click', async function() {
       var title = container.querySelector('#edit-title').value.trim() || '无标题';
       var content = container.querySelector('#edit-content').value;
       var groupId = container.querySelector('#edit-group').value || null;
@@ -189,20 +192,24 @@
       '</div>';
     
     // Close
-    container.querySelector('#detail-close').addEventListener('click', closeDetail);
+    var closeBtn2 = container.querySelector('#detail-close');
+    if (closeBtn2) closeBtn2.addEventListener('click', closeDetail);
     
     // Copy
-    container.querySelector('#btn-copy').addEventListener('click', function() {
+    var copyBtn = container.querySelector('#btn-copy');
+    if (copyBtn) copyBtn.addEventListener('click', function() {
       navigator.clipboard.writeText(prompt.content).then(function() {
         components.showToast('已复制到剪贴板', 'success');
       });
     });
     
     // Edit
-    container.querySelector('#btn-edit').addEventListener('click', function() { renderDetail(prompt.id, 'edit'); });
+    var editBtn = container.querySelector('#btn-edit');
+    if (editBtn) editBtn.addEventListener('click', function() { renderDetail(prompt.id, 'edit'); });
     
     // Delete
-    container.querySelector('#btn-delete').addEventListener('click', function() {
+    var deleteBtn = container.querySelector('#btn-delete');
+    if (deleteBtn) deleteBtn.addEventListener('click', function() {
       components.showModal('确认删除', '<p>确定要删除这条提示词吗？</p>', async function() {
         await store.deletePrompt(prompt.id);
         components.showToast('已删除', 'success');
@@ -212,7 +219,8 @@
     });
     
     // Add annotation
-    container.querySelector('#btn-add-annotation').addEventListener('click', async function() {
+    var addAnnoBtn = container.querySelector('#btn-add-annotation');
+    if (addAnnoBtn) addAnnoBtn.addEventListener('click', async function() {
       var input = container.querySelector('#new-annotation');
       var content = input.value.trim();
       if (!content) return;
@@ -227,8 +235,9 @@
       }
     });
     
-    // Annotation actions
+    // Annotation actions - edit
     container.querySelectorAll('.annotation-edit').forEach(function(btn) {
+      if (!btn) return;
       btn.addEventListener('click', async function() {
         var id = btn.dataset.id;
         var currentContent = btn.dataset.content;
@@ -241,6 +250,7 @@
     });
     
     container.querySelectorAll('.annotation-delete').forEach(function(btn) {
+      if (!btn) return;
       btn.addEventListener('click', async function() {
         var id = btn.dataset.id;
         await store.deleteAnnotation(id);
