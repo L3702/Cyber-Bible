@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Test</title></head>
+<body>
+<div id="output">Testing...</div>
+<script src="js/utils.js"></script>
+<script src="js/db.js"></script>
+<script src="js/store.js"></script>
+<script src="js/ui/components.js"></script>
+<script>
+var output = document.getElementById('output');
+
+async function test() {
+  try {
+    // Test showInputModal
+    var modalResult = null;
+    CyberBible.ui.components.showInputModal('测试输入', '请输入内容', '', function(val) {
+      modalResult = val;
+    });
+    
+    // Wait for modal to render
+    await new Promise(r => setTimeout(r, 100));
+    
+    // Type in the input
+    var input = document.querySelector('.modal input');
+    if (input) {
+      input.value = '测试分组名称';
+      output.innerHTML += '<br>Input found, value set';
+    } else {
+      output.innerHTML += '<br>ERROR: Input not found';
+      return;
+    }
+    
+    // Click confirm
+    var confirmBtn = document.querySelector('.modal .btn-primary');
+    if (confirmBtn) {
+      confirmBtn.click();
+      output.innerHTML += '<br>Confirm clicked';
+    } else {
+      output.innerHTML += '<br>ERROR: Confirm button not found';
+      return;
+    }
+    
+    // Wait for callback
+    await new Promise(r => setTimeout(r, 100));
+    
+    if (modalResult === '测试分组名称') {
+      output.innerHTML += '<br>TEST_PASS: showInputModal callback received correct value';
+    } else {
+      output.innerHTML += '<br>TEST_FAIL: modalResult=' + modalResult;
+    }
+    
+    // Test createGroup via store
+    var g = await CyberBible.store.createGroup({ name: modalResult });
+    output.innerHTML += '<br>Group created: ' + g.name + ' (id=' + g.id + ')';
+    
+    // Cleanup
+    await CyberBible.db.clear('groups');
+    output.innerHTML += '<br>ALL_TESTS_PASS';
+    
+  } catch(e) {
+    output.innerHTML += '<br>ERROR: ' + e.message + '<br>' + e.stack;
+  }
+}
+
+test();
+</script>
+</body>
+</html>

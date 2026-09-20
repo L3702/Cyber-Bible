@@ -70,10 +70,48 @@
       '<input type="text" id="' + inputId + '" placeholder="' + utils.escapeHtml(placeholder || '') + '" value="' + utils.escapeHtml(defaultValue || '') + '">' +
       '</div>';
     
-    showModal(title, html, function() {
-      var val = document.getElementById(inputId).value.trim();
+    // Create modal with reference to input element
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    var modal = document.createElement('div');
+    modal.className = 'modal';
+    var titleEl = document.createElement('div');
+    titleEl.className = 'modal-title';
+    titleEl.textContent = title;
+    var contentEl = document.createElement('div');
+    contentEl.className = 'modal-content';
+    contentEl.innerHTML = html;
+    var footer = document.createElement('div');
+    footer.className = 'modal-footer';
+    var cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn-secondary';
+    cancelBtn.textContent = '取消';
+    var confirmBtn = document.createElement('button');
+    confirmBtn.className = 'btn btn-primary';
+    confirmBtn.textContent = '确定';
+    footer.appendChild(cancelBtn);
+    footer.appendChild(confirmBtn);
+    modal.appendChild(titleEl);
+    modal.appendChild(contentEl);
+    modal.appendChild(footer);
+    overlay.appendChild(modal);
+    
+    var inputEl = contentEl.querySelector('input');
+    
+    cancelBtn.addEventListener('click', function() {
+      overlay.remove();
+    });
+    confirmBtn.addEventListener('click', function() {
+      var val = inputEl ? inputEl.value.trim() : '';
+      overlay.remove();
       if (val && onSubmit) onSubmit(val);
     });
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) overlay.remove();
+    });
+    
+    document.body.appendChild(overlay);
+    if (inputEl) inputEl.focus();
   }
 
   // 显示 Toast 提示
