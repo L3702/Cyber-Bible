@@ -465,7 +465,9 @@
   }
 
   function onSvgMouseDown(e) {
-    if (e.target === svg) {
+    // Allow panning when clicking on empty areas (svg, grid rect, or background)
+    var isEmptyArea = e.target === svg || e.target.tagName === 'rect' || e.target.classList.contains('graph-container');
+    if (isEmptyArea) {
       dragNode = null;
       isPanning = true;
       panStart = { x: e.clientX - transform.x, y: e.clientY - transform.y };
