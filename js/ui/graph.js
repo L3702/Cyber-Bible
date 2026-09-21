@@ -11,6 +11,8 @@
   var dragStart = { x: 0, y: 0 };
   var animFrame = null;
   var editMode = null; // 'add-link' | 'delete-link' | null
+  var isPanning = false;
+  var panStart = { x: 0, y: 0 };
   var addLinkSource = null; // first node selected for adding link
   var toolbar = null;
 
@@ -22,9 +24,14 @@
       '<button id="btn-cancel-edit" class="btn btn-sm btn-secondary" style="display:none">取消</button>' +
       '<span id="edit-mode-hint" style="font-size:12px;color:#999;margin-left:8px"></span>' +
       '</div>' +
-      '<div class="graph-container">' +
-      '<svg class="graph-svg"></svg>' +
-      '<div class="graph-legend"><div>● 提示词</div><div>■ 分组</div><div>◆ 标签</div></div>' +
+      '<div class="graph-container" style="position:relative;overflow:hidden;background:#fafafa;border-radius:8px;border:1px solid #e0e0e0">' +
+      '<svg class="graph-svg" style="display:block"></svg>' +
+      '<div class="graph-legend" style="position:absolute;bottom:12px;left:12px;background:rgba(255,255,255,0.9);border-radius:6px;padding:8px 12px;box-shadow:0 1px 4px rgba(0,0,0,0.1);font-size:12px"><div>● 提示词</div><div>■ 分组</div><div>◆ 标签</div></div>' +
+      '<div class="graph-zoom-controls" style="position:absolute;bottom:12px;right:12px;display:flex;gap:4px;background:rgba(255,255,255,0.9);border-radius:6px;padding:4px;box-shadow:0 1px 4px rgba(0,0,0,0.1)">' +
+      '<button id="btn-zoom-in" class="btn btn-sm btn-secondary" style="padding:4px 8px;font-size:14px">+</button>' +
+      '<button id="btn-zoom-out" class="btn btn-sm btn-secondary" style="padding:4px 8px;font-size:14px">-</button>' +
+      '<button id="btn-zoom-reset" class="btn btn-sm btn-secondary" style="padding:4px 8px;font-size:12px">1:1</button>' +
+      '</div>' +
       '<div id="graph-detail" style="position:absolute;top:12px;right:12px;width:250px;background:rgba(255,255,255,0.95);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);display:none"></div>' +
       '</div>';
     
@@ -60,6 +67,14 @@
     });
     
     if (cancelBtn) cancelBtn.addEventListener('click', cancelEditMode);
+    
+    // Zoom controls
+    var zoomInBtn = container.querySelector('#btn-zoom-in');
+    var zoomOutBtn = container.querySelector('#btn-zoom-out');
+    var zoomResetBtn = container.querySelector('#btn-zoom-reset');
+    if (zoomInBtn) zoomInBtn.addEventListener('click', function() { zoom(1.2); });
+    if (zoomOutBtn) zoomOutBtn.addEventListener('click', function() { zoom(0.8); });
+    if (zoomResetBtn) zoomResetBtn.addEventListener('click', function() { resetZoom(); });
     
     loadAndRender(container);
   }
@@ -160,6 +175,28 @@
     svg.setAttribute("width", width);
     svg.setAttribute("height", height);
     svg.innerHTML = "";
+
+    // Add grid pattern
+    var defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    var pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+    pattern.setAttribute("id", "grid");
+    pattern.setAttribute("width", "40");
+    pattern.setAttribute("height", "40");
+    pattern.setAttribute("patternUnits", "userSpaceOnUse");
+    var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M 40 0 L 0 0 0 40");
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "#e0e0e0");
+    path.setAttribute("stroke-width", "0.5");
+    pattern.appendChild(path);
+    defs.appendChild(pattern);
+    svg.appendChild(defs);
+
+    var gridRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    gridRect.setAttribute("width", "100%");
+    gridRect.setAttribute("height", "100%");
+    gridRect.setAttribute("fill", "url(#grid)");
+    svg.appendChild(gridRect);
 
     // Create main group
     g = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -318,8 +355,7 @@
         node.vy += (cy - node.y) * 0.001;
         node.vx *= 0.6; node.vy *= 0.6;
         node.x += node.vx; node.y += node.vy;
-        node.x = Math.max(30, Math.min(width - 30, node.x));
-        node.y = Math.max(30, Math.min(height - 30, node.y));
+        // No position constraints - infinite canvas
       });
       updatePositions();
       alpha *= decay;
@@ -388,18 +424,38 @@
     if (linksGroup) Array.from(linksGroup.children).forEach(function(el) { el.setAttribute("stroke-opacity", "0.6"); });
   }
 
+  function zoom(factor) {
+    var newK = Math.max(0.1, Math.min(5, transform.k * factor));
+    // Zoom towards center
+    var cx = width / 2, cy = height / 2;
+    transform.x = cx - (cx - transform.x) * (newK / transform.k);
+    transform.y = cy - (cy - transform.y) * (newK / transform.k);
+    transform.k = newK;
+    if (g) g.setAttribute("transform", "translate(" + transform.x + "," + transform.y + ") scale(" + transform.k + ")");
+  }
+
+  function resetZoom() {
+    transform = { x: 0, y: 0, k: 1 };
+    if (g) g.setAttribute("transform", "translate(0,0) scale(1)");
+  }
+
   function startDrag(e, node) { dragNode = node; dragStart = { x: e.clientX, y: e.clientY }; }
 
   function onMouseMove(e) {
-    if (!dragNode) return;
-    var dx = (e.clientX - dragStart.x) / transform.k;
-    var dy = (e.clientY - dragStart.y) / transform.k;
-    dragNode.x += dx; dragNode.y += dy;
-    dragNode.vx = 0; dragNode.vy = 0;
-    dragStart = { x: e.clientX, y: e.clientY };
+    if (dragNode) {
+      var dx = (e.clientX - dragStart.x) / transform.k;
+      var dy = (e.clientY - dragStart.y) / transform.k;
+      dragNode.x += dx; dragNode.y += dy;
+      dragNode.vx = 0; dragNode.vy = 0;
+      dragStart = { x: e.clientX, y: e.clientY };
+    } else if (isPanning) {
+      transform.x = e.clientX - panStart.x;
+      transform.y = e.clientY - panStart.y;
+      if (g) g.setAttribute("transform", "translate(" + transform.x + "," + transform.y + ") scale(" + transform.k + ")");
+    }
   }
 
-  function onMouseUp() { dragNode = null; }
+  function onMouseUp() { dragNode = null; isPanning = false; }
 
   function onWheel(e) {
     e.preventDefault();
@@ -411,7 +467,8 @@
   function onSvgMouseDown(e) {
     if (e.target === svg) {
       dragNode = null;
-      dragStart = { x: e.clientX - transform.x, y: e.clientY - transform.y };
+      isPanning = true;
+      panStart = { x: e.clientX - transform.x, y: e.clientY - transform.y };
     }
   }
 
