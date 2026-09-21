@@ -1,7 +1,7 @@
 // Cyber Bible - IndexedDB 封装
 (function() {
   const DB_NAME = 'CyberBibleDB';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   let dbInstance = null;
 
   // 打开数据库
@@ -14,6 +14,12 @@
       const request = indexedDB.open(DB_NAME, DB_VERSION);
       request.onupgradeneeded = function(e) {
         const db = e.target.result;
+        // links table
+        if (!db.objectStoreNames.contains('links')) {
+          const linkStore = db.createObjectStore('links', { keyPath: 'id' });
+          linkStore.createIndex('by_source', 'source', { unique: false });
+          linkStore.createIndex('by_target', 'target', { unique: false });
+        }
         // prompts 表
         if (!db.objectStoreNames.contains('prompts')) {
           const promptStore = db.createObjectStore('prompts', { keyPath: 'id' });
@@ -146,3 +152,5 @@
     getByIndex: getByIndex
   };
 })();
+
+

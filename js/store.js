@@ -265,17 +265,44 @@
     });
   }
 
+  // ========== 关系操作 ==========
+
+  function createLink(sourceId, targetId) {
+    const link = {
+      id: crypto.randomUUID(),
+      source: sourceId,
+      target: targetId,
+      type: 'custom',
+      created: Date.now()
+    };
+    return db.add('links', link);
+  }
+
+  function deleteLink(sourceId, targetId) {
+    return db.getByIndex('links', 'by_source', sourceId).then(function(links) {
+      const link = links.find(function(l) { return l.target === targetId; });
+      if (!link) throw new Error('关系不存在');
+      return db.delete('links', link.id);
+    });
+  }
+
+  function getAllLinks() {
+    return db.getAll('links');
+  }
+
   // ========== 图谱数据 ==========
 
   function getGraphData() {
     return Promise.all([
       db.getAll('prompts'),
       db.getAll('groups'),
-      getAllTags()
+      getAllTags(),
+      getAllLinks()
     ]).then(function(results) {
       var prompts = results[0];
       var groups = results[1];
       var tags = results[2];
+      var customLinks = results[3];
       var nodes = [];
       var links = [];
 
@@ -329,6 +356,11 @@
         });
       });
 
+      // 添加自定义关系
+      customLinks.forEach(function(link) {
+        links.push({ source: link.source, target: link.target, type: 'custom' });
+      });
+
       return { nodes: nodes, links: links };
     });
   }
@@ -359,7 +391,16 @@
     // 导入导出
     exportAll: exportAll,
     importAll: importAll,
+    // 关系
+    createLink: createLink,
+    deleteLink: deleteLink,
+    getAllLinks: getAllLinks,
     // 图谱
     getGraphData: getGraphData
   };
 })();
+
+
+
+
+

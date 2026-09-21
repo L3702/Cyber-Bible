@@ -10,15 +10,132 @@
   var dragNode = null;
   var dragStart = { x: 0, y: 0 };
   var animFrame = null;
+  var editMode = null; // 'add-link' | 'delete-link' | null
+  var addLinkSource = null; // first node selected for adding link
+  var toolbar = null;
 
   function render(container) {
     container.innerHTML = '<div class="section-title">🕸️ 关系图谱</div>' +
+      '<div id="graph-toolbar" style="display:flex;gap:8px;margin-bottom:8px;padding:8px;background:var(--color-surface);border-radius:8px;box-shadow:var(--shadow-sm)">' +
+      '<button id="btn-add-link" class="btn btn-sm btn-secondary">🔗 添加关系</button>' +
+      '<button id="btn-delete-link" class="btn btn-sm btn-secondary">✂️ 删除关系</button>' +
+      '<button id="btn-cancel-edit" class="btn btn-sm btn-secondary" style="display:none">取消</button>' +
+      '<span id="edit-mode-hint" style="font-size:12px;color:#999;margin-left:8px"></span>' +
+      '</div>' +
       '<div class="graph-container">' +
       '<svg class="graph-svg"></svg>' +
       '<div class="graph-legend"><div>● 提示词</div><div>■ 分组</div><div>◆ 标签</div></div>' +
       '<div id="graph-detail" style="position:absolute;top:12px;right:12px;width:250px;background:rgba(255,255,255,0.95);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);display:none"></div>' +
       '</div>';
+    
+    // Bind toolbar events
+    var addLinkBtn = container.querySelector('#btn-add-link');
+    var deleteLinkBtn = container.querySelector('#btn-delete-link');
+    var cancelBtn = container.querySelector('#btn-cancel-edit');
+    var hint = container.querySelector('#edit-mode-hint');
+    
+    if (addLinkBtn) addLinkBtn.addEventListener('click', function() {
+      if (editMode === 'add-link') {
+        cancelEditMode();
+      } else {
+        editMode = 'add-link';
+        addLinkSource = null;
+        hint.textContent = '点击第一个节点';
+        addLinkBtn.classList.add('btn-primary');
+        addLinkBtn.classList.remove('btn-secondary');
+        cancelBtn.style.display = '';
+      }
+    });
+    
+    if (deleteLinkBtn) deleteLinkBtn.addEventListener('click', function() {
+      if (editMode === 'delete-link') {
+        cancelEditMode();
+      } else {
+        editMode = 'delete-link';
+        hint.textContent = '点击要删除的关系线';
+        deleteLinkBtn.classList.add('btn-danger');
+        deleteLinkBtn.classList.remove('btn-secondary');
+        cancelBtn.style.display = '';
+      }
+    });
+    
+    if (cancelBtn) cancelBtn.addEventListener('click', cancelEditMode);
+    
     loadAndRender(container);
+  }
+  
+  function handleAddLinkNodeClick(container, node) {
+    var hint = document.querySelector('#edit-mode-hint');
+    if (!addLinkSource) {
+      addLinkSource = node;
+      hint.textContent = '点击第二个节点完成连接';
+      // Highlight the source node
+      var sourceEl = nodesGroup.querySelector('[data-id="' + node.id + '"]');
+      if (sourceEl) sourceEl.style.filter = 'brightness(1.3)';
+    } else {
+      if (addLinkSource.id === node.id) {
+        hint.textContent = '不能连接同一个节点，请选择其他节点';
+        return;
+      }
+      // Check if link already exists
+      var exists = links.some(function(l) {
+        var s = typeof l.source === 'object' ? l.source.id : l.source;
+        var t = typeof l.target === 'object' ? l.target.id : l.target;
+        return (s === addLinkSource.id && t === node.id) || (s === node.id && t === addLinkSource.id);
+      });
+      if (exists) {
+        hint.textContent = '这两个节点之间已存在关系';
+        // Reset
+        var sourceEl = nodesGroup.querySelector('[data-id="' + addLinkSource.id + '"]');
+        if (sourceEl) sourceEl.style.filter = '';
+        addLinkSource = null;
+        hint.textContent = '点击第一个节点';
+        return;
+      }
+      // Create new link
+      var newLink = { source: addLinkSource.id, target: node.id, type: 'custom' };
+      links.push(newLink);
+      // Add to store
+      window.CyberBible.store.createLink(addLinkSource.id, node.id).then(function() {
+        // Redraw
+        renderGraph(container);
+        cancelEditMode();
+        components.showToast('关系已添加', 'success');
+      }).catch(function(e) {
+        components.showToast('添加关系失败: ' + e.message, 'error');
+      });
+    }
+  }
+  
+  function handleDeleteLinkClick(container, link) {
+    var s = typeof link.source === 'object' ? link.source.id : link.source;
+    var t = typeof link.target === 'object' ? link.target.id : link.target;
+    window.CyberBible.store.deleteLink(s, t).then(function() {
+      // Remove from local array
+      links = links.filter(function(l) {
+        var ls = typeof l.source === 'object' ? l.source.id : l.source;
+        var lt = typeof l.target === 'object' ? l.target.id : l.target;
+        return !(ls === s && lt === t);
+      });
+      renderGraph(container);
+      cancelEditMode();
+      components.showToast('关系已删除', 'success');
+    }).catch(function(e) {
+      components.showToast('删除关系失败: ' + e.message, 'error');
+    });
+  }
+  
+  function cancelEditMode() {
+    editMode = null;
+    addLinkSource = null;
+    var addLinkBtn = document.querySelector('#btn-add-link');
+    var deleteLinkBtn = document.querySelector('#btn-delete-link');
+    var cancelBtn = document.querySelector('#btn-cancel-edit');
+    var hint = document.querySelector('#edit-mode-hint');
+    if (addLinkBtn) { addLinkBtn.classList.remove('btn-primary'); addLinkBtn.classList.add('btn-secondary'); }
+    if (deleteLinkBtn) { deleteLinkBtn.classList.remove('btn-danger'); deleteLinkBtn.classList.add('btn-secondary'); }
+    if (cancelBtn) cancelBtn.style.display = 'none';
+    if (hint) hint.textContent = '';
   }
 
   async function loadAndRender(container) {
@@ -104,7 +221,13 @@
 
       group.addEventListener("click", function(e) {
         e.stopPropagation();
-        onNodeClick(container, node);
+        if (editMode === 'add-link') {
+          handleAddLinkNodeClick(container, node);
+        } else if (editMode === 'delete-link') {
+          // In delete-link mode, clicking nodes does nothing special
+        } else {
+          onNodeClick(container, node);
+        }
       });
       group.addEventListener("dblclick", function(e) {
         e.stopPropagation();
@@ -118,6 +241,20 @@
       });
 
       nodesGroup.appendChild(group);
+    });
+
+    // Add link line click handler
+    links.forEach(function(link) {
+      var line = linksGroup.querySelector('[data-source="' + (typeof link.source === 'object' ? link.source.id : link.source) + '"][data-target="' + (typeof link.target === 'object' ? link.target.id : link.target) + '"]');
+      if (line) {
+        line.style.cursor = 'pointer';
+        line.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (editMode === 'delete-link') {
+            handleDeleteLinkClick(container, link);
+          }
+        });
+      }
     });
 
     // SVG events
