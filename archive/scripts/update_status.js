@@ -1,4 +1,6 @@
-# Cyber Bible 开发状态
+const fs = require('fs');
+
+const status = `# Cyber Bible 开发状态
 
 ## 当前进度
 
@@ -46,15 +48,15 @@
 ## 测试方法
 
 ### 启动本地服务器
-```bash
-cd D:\Codex\Cyber_Bible
+\`\`\`bash
+cd D:\\Codex\\Cyber_Bible
 python -m http.server 8765
-```
+\`\`\`
 
 ### 运行测试
-```bash
+\`\`\`bash
 node test_runner.js
-```
+\`\`\`
 
 ### 测试文件
 - test_group_delete.html - 删除分组测试
@@ -68,3 +70,7 @@ node test_runner.js
 1. 修复问题8：添加标签后计数没有增加
 2. 运行所有测试验证
 3. 提交代码
+`;
+
+fs.writeFileSync('D:\\Codex\\Cyber_Bible\\DEVELOPMENT_STATUS.md', status, 'utf8');
+console.log('DEVELOPMENT_STATUS.md updated');
