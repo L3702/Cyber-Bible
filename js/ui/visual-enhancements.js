@@ -6,7 +6,39 @@
 (function() {
   'use strict';
 
-  // Use both DOMContentLoaded and a fallback for late initialization
+  
+  // ============================================================
+  // THEME TOGGLE
+  // ============================================================
+  function initThemeToggle() {
+    var toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+
+    // Restore saved theme
+    var savedTheme = localStorage.getItem('cyber-bible-theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else if (!savedTheme) {
+      // Check system preference on first visit
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('cyber-bible-theme', 'dark');
+      }
+    }
+
+    // Toggle on click
+    toggle.addEventListener('click', function() {
+      var current = document.documentElement.getAttribute('data-theme');
+      if (current === 'dark') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('cyber-bible-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('cyber-bible-theme', 'dark');
+      }
+    });
+  }
+// Use both DOMContentLoaded and a fallback for late initialization
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
@@ -14,6 +46,7 @@
   }
 
   function init() {
+  initThemeToggle();
     initCustomCursor();
     initTypewriter();
     initTagRotation();
@@ -290,3 +323,4 @@
   }
 
 })();
+

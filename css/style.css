@@ -43,6 +43,170 @@
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ---------- Dark Theme ---------- */
+[data-theme="dark"] {
+  --color-bg:        #0A0A0A;
+  --color-text:      #F5F5F5;
+  --color-yellow:    #FFDE00;
+  --color-yellow-light: #FFF3A0;
+  --color-gray-100:  #1A1A1A;
+  --color-gray-200:  #2A2A2A;
+  --color-gray-300:  #3A3A3A;
+  --color-gray-500:  #888888;
+  --color-gray-700:  #BBBBBB;
+  --color-cursor:    #444444;
+}
+
+/* Smooth theme transition */
+body, #header, #sidebar, #content, #detail-panel, .card, .stat-card, .modal, .search-bar input, .data-table, .search-dropdown, .groups-sidebar, .graph-container, .toast {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Dark theme adjustments for rgba-based styles */
+[data-theme="dark"] .search-bar input {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--color-text);
+}
+[data-theme="dark"] .search-bar input:focus {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255,255,255,0.15);
+}
+[data-theme="dark"] .btn-secondary {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+}
+[data-theme="dark"] .btn-secondary:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.15);
+}
+[data-theme="dark"] .tag {
+  background: rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .tag:hover {
+  background: var(--color-yellow);
+  color: #000;
+}
+[data-theme="dark"] .nav-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+[data-theme="dark"] .group-item:hover {
+  background: rgba(255,255,255,0.04);
+}
+[data-theme="dark"] .data-table tr:hover {
+  background: rgba(255, 222, 0, 0.06);
+}
+[data-theme="dark"] .icon-btn:hover {
+  background: rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .modal-overlay {
+  background: rgba(0,0,0,0.6);
+}
+[data-theme="dark"] #overlay {
+  background: rgba(0,0,0,0.5);
+}
+[data-theme="dark"] mark {
+  background: var(--color-yellow);
+  color: #000;
+}
+[data-theme="dark"] .stat-card::after {
+  opacity: 0.08;
+}
+[data-theme="dark"] .graph-legend {
+  background: rgba(20,20,20,0.9);
+}
+[data-theme="dark"] #audio-bars {
+  background: rgba(20,20,20,0.6);
+  border-color: rgba(255,255,255,0.08);
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* ============================================================
+   THEME TOGGLE BUTTON (top-left, fixed)
+   ============================================================ */
+
+#theme-toggle {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 10000;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px) saturate(1.3);
+  -webkit-backdrop-filter: blur(10px) saturate(1.3);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  font-size: 20px;
+  color: var(--color-text);
+  overflow: hidden;
+}
+
+#theme-toggle:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+}
+
+#theme-toggle:active {
+  transform: scale(0.95);
+}
+
+#theme-toggle .theme-icon {
+  position: absolute;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+/* Sun icon (shown in light mode) */
+#theme-toggle .icon-sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+/* Moon icon (hidden in light mode) */
+#theme-toggle .icon-moon {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+
+/* Dark mode: swap icons */
+[data-theme="dark"] #theme-toggle .icon-sun {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+}
+[data-theme="dark"] #theme-toggle .icon-moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+[data-theme="dark"] #theme-toggle {
+  background: rgba(30, 30, 30, 0.72);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.2), 0 1px 3px rgba(0,0,0,0.1);
+}
+[data-theme="dark"] #theme-toggle:hover {
+  box-shadow: 0 4px 30px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.15);
+}
+
+/* Ensure toggle doesn't overlap with header on small screens */
+@media (max-width: 768px) {
+  #theme-toggle {
+    top: 8px;
+    left: 8px;
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+  }
+}
+
 /* ---------- Reset ---------- */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -1134,5 +1298,6 @@ mark {
   opacity: 1;
   transform: translateY(0);
 }
+
 
 
