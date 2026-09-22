@@ -4,14 +4,72 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cyber Bible</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- Custom Cursor -->
+  <div id="custom-cursor"></div>
+
+  <!-- Hero Section (decorative background on home view) -->
+  <div id="hero-section" class="hidden">
+    <div class="hero-texture"></div>
+    <div class="hero-tag" id="hero-tag">AI · Prompts · Knowledge</div>
+    <div class="hero-title" id="hero-title">
+      <span id="typewriter-text"></span><span class="cursor-blink"></span>
+    </div>
+  </div>
+
+  <!-- Decorative: Spiral Dots -->
+  <div id="spiral-dots">
+    <svg viewBox="0 0 260 500" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="gooey">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="gooey" />
+          <feComposite in="SourceGraphic" in2="gooey" operator="atop"/>
+        </filter>
+      </defs>
+      <g filter="url(#gooey)">
+        <!-- Spiral pattern of dots -->
+        <circle cx="200" cy="50"  r="12" fill="#FFDE00" opacity="0.9"/>
+        <circle cx="180" cy="80"  r="10" fill="#FFDE00" opacity="0.8"/>
+        <circle cx="165" cy="115" r="9"  fill="#FFDE00" opacity="0.7"/>
+        <circle cx="155" cy="150" r="11" fill="#FFDE00" opacity="0.85"/>
+        <circle cx="150" cy="185" r="8"  fill="#FFDE00" opacity="0.6"/>
+        <circle cx="148" cy="220" r="10" fill="#FFDE00" opacity="0.75"/>
+        <circle cx="150" cy="255" r="12" fill="#FFDE00" opacity="0.9"/>
+        <circle cx="158" cy="290" r="9"  fill="#FFDE00" opacity="0.7"/>
+        <circle cx="170" cy="320" r="11" fill="#FFDE00" opacity="0.8"/>
+        <circle cx="188" cy="350" r="8"  fill="#FFDE00" opacity="0.65"/>
+        <circle cx="210" cy="375" r="10" fill="#FFDE00" opacity="0.7"/>
+        <circle cx="230" cy="400" r="7"  fill="#FFDE00" opacity="0.5"/>
+        <circle cx="245" cy="425" r="9"  fill="#FFDE00" opacity="0.6"/>
+        <circle cx="250" cy="450" r="6"  fill="#FFDE00" opacity="0.4"/>
+        <circle cx="248" cy="475" r="8"  fill="#FFDE00" opacity="0.5"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Decorative: Audio Wave Bars -->
+  <div id="audio-bars">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
+
   <!-- 顶部工具栏 -->
   <header id="header">
-    <div class="logo">📖 Cyber Bible</div>
+    <div class="logo">Cyber Bible</div>
     <div class="search-bar">
-      <input type="text" id="global-search" placeholder="🔍 搜索提示词..." autocomplete="off">
+      <input type="text" id="global-search" placeholder="搜索提示词..." autocomplete="off">
       <div id="search-results" class="search-dropdown hidden"></div>
     </div>
     <button id="btn-new" class="btn btn-primary">+ 新建提示词</button>
@@ -56,5 +114,7 @@
   <script src="js/ui/database.js"></script>
   <script src="js/ui/prompt-detail.js"></script>
   <script src="js/app.js"></script>
+  <!-- Visual enhancement script (purely decorative) -->
+  <script src="js/ui/visual-enhancements.js"></script>
 </body>
 </html>
